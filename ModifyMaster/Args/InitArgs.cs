@@ -18,6 +18,8 @@ using System.Windows.Forms;
 using System.Globalization;
 using Cheng.Json.GeneratorNumbers;
 using Cheng.Algorithm.Collections;
+using System.Drawing;
+using Cheng.Xmls.StandardItemText;
 
 namespace Cheng.ModifyMaster
 {
@@ -25,7 +27,7 @@ namespace Cheng.ModifyMaster
     /// <summary>
     /// C#程序基本参数
     /// </summary>
-    public sealed unsafe class InitArgs : Cheng.Memorys.SafreleaseUnmanagedResources
+    public sealed unsafe class InitArgs : SafreleaseUnmanagedResources
     {
 
         #region 单例
@@ -54,7 +56,6 @@ namespace Cheng.ModifyMaster
         /// <summary>
         /// 初始化参数
         /// </summary>
-        /// <param name="args">命令行参数</param>
         public InitArgs()
         {
             //commandArgs = args;
@@ -63,6 +64,8 @@ namespace Cheng.ModifyMaster
             currentDomain = AppDomain.CurrentDomain;
 
             applicationName = currentDomain.FriendlyName;
+
+            xmlTextParser = new XmlStandardItemText();
 
             isX64 = sizeof(void*) == 8;
 
@@ -79,10 +82,13 @@ namespace Cheng.ModifyMaster
 
             systemIsX64 = Environment.Is64BitOperatingSystem;
 
+            appMyConfigFilePath = Path.Combine(rootDirectory, "cfg.json");
+
             comparerKeys = new ComparerKeys();
             processModify = new ProcessModify();
             p_hotKeysDown = new SortedSet<Keys>(comparerKeys);
-            
+
+            languageDirectory = Path.Combine(rootDirectory, "language");
             
             f_init();
         }
@@ -90,6 +96,9 @@ namespace Cheng.ModifyMaster
         private void f_initDebugFile()
         {
             debugLogPrint = null;
+            debugLogPrint = Console.Out;
+            return;
+
             try
             {
                 if (appConfigXml is null) return;
@@ -128,12 +137,22 @@ namespace Cheng.ModifyMaster
             {
                 debugLogPrint = null;
             }
-            //debugLogPrint = Console.Out;
         }
 
         private void f_init()
         {
             f_initCommandLineArgs();
+
+            try
+            {
+                Directory.CreateDirectory(languageDirectory);
+            }
+            catch (Exception)
+            {
+            }
+
+            languageConfigFilePath = Path.Combine(languageDirectory, "language.config.json");
+            languageList = new List<LanguageInf>(2);
             tempTask = null;
             p_allHotKeys = new Dictionary<string, Keys>(100);
             f_initAllHotkeys();
@@ -155,7 +174,10 @@ namespace Cheng.ModifyMaster
             }
 
             f_initDebugFile();
+            configFile = new ConfigFile();
+            configFile.Clear();
             p_audioEffects = new AudioEffects();
+            p_languagePack = new LanguagePack();
         }
 
         private void f_initCommandLineArgs()
@@ -232,6 +254,11 @@ namespace Cheng.ModifyMaster
         public readonly bool isX64;
 
         /// <summary>
+        /// 应用配置文件路径
+        /// </summary>
+        public readonly string appMyConfigFilePath;
+
+        /// <summary>
         /// 该程序的配置文件xml文档
         /// </summary>
         public XmlDocument appConfigXml;
@@ -242,18 +269,43 @@ namespace Cheng.ModifyMaster
         public string commandlineArgs;
 
         /// <summary>
+        /// 语言包文件夹
+        /// </summary>
+        public readonly string languageDirectory;
+
+        /// <summary>
+        /// 语言包列表配置项文件路径
+        /// </summary>
+        public string languageConfigFilePath;
+
+        /// <summary>
         /// 当前运行的操作系统是否为64位
         /// </summary>
         public readonly bool systemIsX64;
+
+        /// <summary>
+        /// 配置缓存
+        /// </summary>
+        public ConfigFile configFile;
 
         #endregion
 
         #region 功能参数
 
         /// <summary>
+        /// xml解析器
+        /// </summary>
+        public readonly XmlStandardItemText xmlTextParser;
+
+        /// <summary>
         /// Keys排序器
         /// </summary>
         public readonly ComparerKeys comparerKeys;
+
+        /// <summary>
+        /// 语言包列表
+        /// </summary>
+        public List<LanguageInf> languageList;
 
         private Dictionary<string, Keys> p_allHotKeys;
 
@@ -292,6 +344,8 @@ namespace Cheng.ModifyMaster
         /// 进程操作台
         /// </summary>
         public readonly ProcessModify processModify;
+
+        public LanguagePack p_languagePack;
 
         #endregion
 
@@ -512,6 +566,86 @@ namespace Cheng.ModifyMaster
         #region 功能
 
         #region 初始化
+
+        /// <summary>
+        /// 初始化应用程序配置文件
+        /// </summary>
+        private void f_initConfig()
+        {
+            if (File.Exists(appMyConfigFilePath))
+            {
+                configFile.LoadToJsonFile(appMyConfigFilePath, jsonParser);
+            }
+        }
+
+        /// <summary>
+        /// 初始化语言包列表
+        /// </summary>
+        private void f_initLanList()
+        {
+
+            if (File.Exists(this.languageConfigFilePath))
+            {
+                try
+                {
+                    JsonVariable json;
+
+                    using (FileStream file = new FileStream(this.languageConfigFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        using (StreamReader sr = new StreamReader(file, Encoding.UTF8, false, 1024 * 2, true))
+                        {
+                            json = jsonParser.ToJsonData(sr);
+                        }
+
+                    }
+
+                    var jlist = json.Array;
+                    languageList.Clear();
+                    for (int i = 0; i < jlist.Count; i++)
+                    {
+                        var lpj = jlist[i];
+                        if (LanguageInf.CreateByJson(lpj, out var lanInf))
+                        {
+                            languageList.Add(lanInf);
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    DebugPrintLine("初始化语言包列表错误");
+                    DebugPrintLineF(ExceptionText(ex));
+                }
+
+            }
+
+
+        }
+
+        /// <summary>
+        /// 初始化语言包
+        /// </summary>
+        private void f_initLanguage()
+        {
+            f_initLanList();
+            //p_languagePack;
+            if (configFile.languageInformation.HasValue)
+            {
+                //configFile.languageInformation.Value;
+                var lv = configFile.languageInformation.Value;
+                p_languagePack.InitByXmlFileOrDef(Path.Combine(languageDirectory, lv.languageFileName), xmlTextParser, out _);
+            }
+            else if (languageList.Count != 0)
+            {
+                var lan = languageList[0];
+                p_languagePack.InitByXmlFileOrDef(Path.Combine(languageDirectory, lan.languageFileName), xmlTextParser, out _);
+            }
+            else
+            {
+                p_languagePack.InitDefault();
+            }
+            
+        }
 
         private void f_initAudioEffect()
         {
@@ -831,12 +965,18 @@ namespace Cheng.ModifyMaster
         public void StartBackCode()
         {
             //p_loopFunction = new LoopFunction();
+            f_initConfig();
             f_initAudioEffect();
             f_openFileMyCommand();
+            f_initLanguage();
             f_initKeyLoop();
             f_initLoopMod();
-            
         }
+
+        #endregion
+
+        #region 配置保存
+
 
         #endregion
 
@@ -914,6 +1054,20 @@ namespace Cheng.ModifyMaster
             //    DebugPrintLineF("音效播放：关闭");
             //}
             p_audioEffects?.PlayOnToggle(toggle);
+        }
+
+        #endregion
+
+        #region 语言
+
+        /// <summary>
+        /// 获得某个key的文本
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>null表示没有或key是null</returns>
+        public string GetLan(string key)
+        {
+            return p_languagePack.GetLan(key);
         }
 
         #endregion

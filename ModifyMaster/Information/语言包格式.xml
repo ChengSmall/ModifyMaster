@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<language>
+
+	<menuItem_file>文件</menuItem_file>
+	<menuItem_file_openSetup>打开</menuItem_file_openSetup>
+	<menuItem_file_openProcess>选择进程</menuItem_file_openProcess>
+	<menuItem_file_openPro_formTitle>输入进程ID</menuItem_file_openPro_formTitle>
+	<menuItem_file_inputProID>打开进程ID</menuItem_file_inputProID>
+	<menuItem_file_exit>退出</menuItem_file_exit>
+	<menuItem_setup>选项</menuItem_setup>
+	<menuItem_setup_selectFont>选择字体</menuItem_setup_selectFont>
+	<menuItem_setup_selectLanguage>选择语言</menuItem_setup_selectLanguage>
+	
+	<title>万能改</title>
+	<title_information_defname>未打开修改配置</title_information_defname>
+	<title_information_author>作者</title_information_author>
+	<title_processNotOpen>未打开进程</title_processNotOpen>
+	<title_openPro_name>进程</title_openPro_name>
+	
+	<column_name>项</column_name>
+	<column_toggle>开关</column_toggle>
+	<column_moftype>值类型</column_moftype>
+	<column_value>值</column_value>
+	<column_moftype>条件</column_moftype>
+
+	<column_moftype_byte>字节值</column_moftype_byte>
+	<column_moftype_int16>16位整数</column_moftype_int16>
+	<column_moftype_uint16>16位正整数</column_moftype_uint16>
+	<column_moftype_int32>32位整数</column_moftype_int32>
+	<column_moftype_uint32>32位正整数</column_moftype_uint32>
+	<column_moftype_int64>64位整数</column_moftype_int64>
+	<column_moftype_float>单浮点</column_moftype_float>
+	<column_moftype_double>双浮点</column_moftype_double>
+	
+	<button_ok>确定</button_ok>
+	<button_cancel>取消</button_cancel>
+	
+	<OpenFileDialpg_title>选择一个修改配置</OpenFileDialpg_title>
+	<OpenFileDialpgFilter_modconfig>修改器配置文件</OpenFileDialpgFilter_modconfig>
+	<OpenFileDialpgFilter_AllFile>所有文件</OpenFileDialpgFilter_AllFile>
+	<OpenFontDialpg_title>选择应用字体</OpenFontDialpg_title>
+
+</language>

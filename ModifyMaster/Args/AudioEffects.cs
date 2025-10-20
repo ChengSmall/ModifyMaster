@@ -17,6 +17,7 @@ using System.Globalization;
 using Cheng.Json.GeneratorNumbers;
 using Cheng.Algorithm.Collections;
 using System.Media;
+using Cheng.Streams;
 
 namespace Cheng.ModifyMaster
 {

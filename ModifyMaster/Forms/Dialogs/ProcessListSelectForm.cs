@@ -191,6 +191,39 @@ namespace Cheng.ModifyMaster
 
         #region 功能
 
+        /// <summary>
+        /// 确定按钮文本
+        /// </summary>
+        public string OKButtonText
+        {
+            get => Col_Button_OK.Text;
+            set
+            {
+                Col_Button_OK.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// 取消按钮文本
+        /// </summary>
+        public string CancelButtonText
+        {
+            get => Col_Button_Cancel.Text;
+            set
+            {
+                Col_Button_Cancel.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// 对话框标题
+        /// </summary>
+        public string Title
+        {
+            get => Text;
+            set => this.Text = value;
+        }
+
         public void SelectSetIDAndRet(int id)
         {
             p_selectProID = id;

@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{27BEF5F9-89E1-47DB-AD0D-66549A3AF8BE}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Cheng.ModifyMaster</RootNamespace>
     <AssemblyName>ModifyMaster</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -44,7 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSharpTemplates">
-      <HintPath>..\..\CSharpTemplatesGit\order\CSharpTemplates\bin\Release\CSharpTemplates.dll</HintPath>
+      <HintPath>..\..\CSharpTemplatesGit\order\CSharpTemplates\bin\Release\netstandard2.0\CSharpTemplates.dll</HintPath>
     </Reference>
     <Reference Include="NetFrameworkTemplate">
       <HintPath>..\..\CSharpTemplatesGit\order\NetFrameworkTemplate4.6.2\bin\Release\NetFrameworkTemplate.dll</HintPath>
@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Args\AudioEffects.cs" />
+    <Compile Include="Args\ConfigPar.cs" />
     <Compile Include="Args\InitArgs.cs" />
     <Compile Include="Args\Modifys.cs" />
     <Compile Include="Args\ProcessAddress.cs" />
@@ -94,6 +95,12 @@
     <Compile Include="Code\NumCondition.cs" />
     <Compile Include="Code\NumGenerators.cs" />
     <Compile Include="Code\ProcessGet.cs" />
+    <Compile Include="Forms\Dialogs\LanguageSelectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Dialogs\LanguageSelectForm.Designer.cs">
+      <DependentUpon>LanguageSelectForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Dialogs\ProcessListSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -109,6 +116,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Forms\Dialogs\LanguageSelectForm.resx">
+      <DependentUpon>LanguageSelectForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\Dialogs\ProcessListSelectForm.resx">
       <DependentUpon>ProcessListSelectForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -129,6 +139,7 @@
     <None Include="Information\值获取结构和修改器扩展.json" />
     <None Include="Information\修改器配置文件格式.json" />
     <None Include="Information\热键编号.json" />
+    <None Include="Information\语言包列表.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -142,7 +153,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Information\语言包格式.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(TargetDir)dll\" md "$(TargetDir)dll\"

@@ -1,0 +1,10 @@
+[
+  {
+    "displayName": "语言包名",
+    "fileName": "语言包文件名"
+  },
+  {
+    "displayName": "中文",
+    "fileName": "zh.xml"
+  }
+]

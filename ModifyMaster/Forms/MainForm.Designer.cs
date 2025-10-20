@@ -45,12 +45,14 @@ namespace Cheng.ModifyMaster
             this.col_menuItem_File_openProcessByID = new System.Windows.Forms.ToolStripMenuItem();
             this.col_Separator_File_1 = new System.Windows.Forms.ToolStripSeparator();
             this.col_menuItem_File_Exit = new System.Windows.Forms.ToolStripMenuItem();
-            this.col_menuItem_setup = new System.Windows.Forms.ToolStripMenuItem();
-            this.col_menuItem_setup_setting = new System.Windows.Forms.ToolStripMenuItem();
+            this.col_menuItem_config = new System.Windows.Forms.ToolStripMenuItem();
+            this.col_menuItem_config_selectFont = new System.Windows.Forms.ToolStripMenuItem();
+            this.col_menuItem_config_selectLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.col_timer = new System.Windows.Forms.Timer(this.components);
             this.col_openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.col_label_title = new System.Windows.Forms.Label();
             this.col_label_ifOpenProcessText = new System.Windows.Forms.Label();
+            this.col_fontDialog = new System.Windows.Forms.FontDialog();
             this.col_menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -103,10 +105,10 @@ namespace Cheng.ModifyMaster
             this.col_menuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.col_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.col_menuItem_File,
-            this.col_menuItem_setup});
+            this.col_menuItem_config});
             this.col_menuStrip.Location = new System.Drawing.Point(0, 0);
             this.col_menuStrip.Name = "col_menuStrip";
-            this.col_menuStrip.Size = new System.Drawing.Size(622, 28);
+            this.col_menuStrip.Size = new System.Drawing.Size(622, 30);
             this.col_menuStrip.TabIndex = 2;
             this.col_menuStrip.Text = "menuStrip";
             // 
@@ -119,8 +121,8 @@ namespace Cheng.ModifyMaster
             this.col_Separator_File_1,
             this.col_menuItem_File_Exit});
             this.col_menuItem_File.Name = "col_menuItem_File";
-            this.col_menuItem_File.Size = new System.Drawing.Size(71, 24);
-            this.col_menuItem_File.Text = "文件(&F)";
+            this.col_menuItem_File.Size = new System.Drawing.Size(53, 26);
+            this.col_menuItem_File.Text = "文件";
             // 
             // col_menuItem_File_openSetup
             // 
@@ -151,21 +153,26 @@ namespace Cheng.ModifyMaster
             this.col_menuItem_File_Exit.Size = new System.Drawing.Size(167, 26);
             this.col_menuItem_File_Exit.Text = "退出(&X)";
             // 
-            // col_menuItem_setup
+            // col_menuItem_config
             // 
-            this.col_menuItem_setup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.col_menuItem_setup_setting});
-            this.col_menuItem_setup.Enabled = false;
-            this.col_menuItem_setup.Name = "col_menuItem_setup";
-            this.col_menuItem_setup.Size = new System.Drawing.Size(72, 24);
-            this.col_menuItem_setup.Text = "选项(&T)";
-            this.col_menuItem_setup.Visible = false;
+            this.col_menuItem_config.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.col_menuItem_config_selectFont,
+            this.col_menuItem_config_selectLanguage});
+            this.col_menuItem_config.Name = "col_menuItem_config";
+            this.col_menuItem_config.Size = new System.Drawing.Size(53, 26);
+            this.col_menuItem_config.Text = "选项";
             // 
-            // col_menuItem_setup_setting
+            // col_menuItem_config_selectFont
             // 
-            this.col_menuItem_setup_setting.Name = "col_menuItem_setup_setting";
-            this.col_menuItem_setup_setting.Size = new System.Drawing.Size(122, 26);
-            this.col_menuItem_setup_setting.Text = "设置";
+            this.col_menuItem_config_selectFont.Name = "col_menuItem_config_selectFont";
+            this.col_menuItem_config_selectFont.Size = new System.Drawing.Size(224, 26);
+            this.col_menuItem_config_selectFont.Text = "选择字体";
+            // 
+            // col_menuItem_config_selectLanguage
+            // 
+            this.col_menuItem_config_selectLanguage.Name = "col_menuItem_config_selectLanguage";
+            this.col_menuItem_config_selectLanguage.Size = new System.Drawing.Size(224, 26);
+            this.col_menuItem_config_selectLanguage.Text = "选择语言";
             // 
             // col_label_title
             // 
@@ -187,6 +194,10 @@ namespace Cheng.ModifyMaster
             this.col_label_ifOpenProcessText.TabIndex = 4;
             this.col_label_ifOpenProcessText.Text = "未打开进程";
             this.col_label_ifOpenProcessText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // col_fontDialog
+            // 
+            this.col_fontDialog.FontMustExist = true;
             // 
             // MainForm
             // 
@@ -218,7 +229,7 @@ namespace Cheng.ModifyMaster
         private System.Windows.Forms.ColumnHeader col_columnHeader_cond;
         private System.Windows.Forms.MenuStrip col_menuStrip;
         private System.Windows.Forms.ToolStripMenuItem col_menuItem_File;
-        private System.Windows.Forms.ToolStripMenuItem col_menuItem_setup;
+        private System.Windows.Forms.ToolStripMenuItem col_menuItem_config;
         private System.Windows.Forms.ToolStripMenuItem col_menuItem_File_openSetup;
         private System.Windows.Forms.ToolStripMenuItem col_menuItem_File_openProcess;
         private System.Windows.Forms.ToolStripSeparator col_Separator_File_1;
@@ -227,8 +238,10 @@ namespace Cheng.ModifyMaster
         private System.Windows.Forms.OpenFileDialog col_openFileDialog;
         private System.Windows.Forms.Label col_label_title;
         private System.Windows.Forms.Label col_label_ifOpenProcessText;
-        private System.Windows.Forms.ToolStripMenuItem col_menuItem_setup_setting;
+        private System.Windows.Forms.ToolStripMenuItem col_menuItem_config_selectFont;
         private System.Windows.Forms.ToolStripMenuItem col_menuItem_File_openProcessByID;
+        private System.Windows.Forms.FontDialog col_fontDialog;
+        private System.Windows.Forms.ToolStripMenuItem col_menuItem_config_selectLanguage;
     }
 }
 

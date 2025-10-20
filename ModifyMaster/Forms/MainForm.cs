@@ -65,18 +65,30 @@ namespace Cheng.ModifyMaster
 
             f_initDialog();
 
+            f_updateLanText();
         }
 
         private void f_initPar()
         {
+            var arg = InitArgs.Args;
             p_winMinSize = false;
             p_inputDialog = new InputValueDialog();
-            p_inputDialog.Title = "输入进程ID";
-            p_inputDialog.ButtonOkText = "确定";
-            p_inputDialog.ButtonCancelText = "取消";
+            //p_inputDialog.Title = arg.GetLan("menuItem_file_openPro_formTitle");
+            //p_inputDialog.ButtonOkText = arg.GetLan("button_ok");
+            //p_inputDialog.ButtonCancelText = arg.GetLan("button_cancel");
             p_strBuffer = new StringBuilder();
             p_uiCheck_OpenProcess = false;
-            Text = "万能改" + " v0.0.0 预发布版";
+            //Text = arg.GetLan("title") + " v0.0.0";
+
+            if (arg.configFile.formFontInformation.HasValue)
+            {
+                var fontInf = arg.configFile.formFontInformation.Value;
+                var fontc = fontInf.CreateFont();
+                if (fontc != null)
+                {
+                    this.Font = fontc;
+                }
+            }
         }
 
         /// <summary>
@@ -84,12 +96,12 @@ namespace Cheng.ModifyMaster
         /// </summary>
         private void f_initMenuCol()
         {
-
             Col_MenuItem_File_Exit.Click += fe_MenuItem_File_Exit_Click;
             Col_MenuItem_File_OpenConfig.Click += fe_MenuItem_File_OpenSetUp_Click;
             Col_MenuItem_File_OpenProcess.Click += fe_MenuItem_File_OpenProcess_Click;
             Col_MenuItem_File_OpenProcessByID.Click += fe_MenuItem_File_OpenProcessByID_Click;
-
+            Col_MenuItem_Config_SelectFont.Click += fe_MenuItem_Config_SelectFont_Click;
+            Col_MenuItem_Config_SelectLan.Click += fe_MenuItem_Config_SelectLan_Click;
         }
 
         /// <summary>
@@ -122,14 +134,45 @@ namespace Cheng.ModifyMaster
 
         private void f_initDialog()
         {
+            //筛选器语言
+            //var openFile = Col_OpenFileDialpg;
+            //openFile.Filter = "修改器配置文件|*.json;*.jsonc;*.txt|所有文件|*";
+        }
+
+        private void f_updateLanText()
+        {
             var openFile = Col_OpenFileDialpg;
-            openFile.Filter = "修改器配置文件|*.json;*.jsonc;*.txt|所有文件|*";
+            var arg = InitArgs.Args;
+
+            Text = arg.GetLan("title") + " v1.0.0";
+
+            p_inputDialog.Title = arg.GetLan("menuItem_file_openPro_formTitle");
+            p_inputDialog.ButtonOkText = arg.GetLan("button_ok");
+            p_inputDialog.ButtonCancelText = arg.GetLan("button_cancel");
+
+            openFile.Title = arg.GetLan("OpenFileDialpg_title");
+
+            openFile.Filter = $"{arg.GetLan("OpenFileDialpgFilter_modconfig")}|*.json;*.jsonc;*.txt|{arg.GetLan("OpenFileDialpgFilter_AllFile")}|*";
+
+            //Col_FontDialog.ShowHelp
+
+            Col_MenuItem_File.Text = arg.GetLan("menuItem_file");
+            Col_MenuItem_File_OpenConfig.Text = arg.GetLan("menuItem_file_openSetup");
+            Col_MenuItem_File_OpenProcess.Text = arg.GetLan("menuItem_file_openProcess");
+            Col_MenuItem_File_OpenProcessByID.Text = arg.GetLan("menuItem_file_openPro_formTitle");
+            Col_MenuItem_Config.Text = arg.GetLan("menuItem_setup");
+            Col_MenuItem_Config_SelectFont.Text = arg.GetLan("menuItem_setup_selectFont");
+            Col_MenuItem_Config_SelectLan.Text = arg.GetLan("menuItem_setup_selectLanguage");
+            Col_MenuItem_File_Exit.Text = arg.GetLan("menuItem_file_exit");
         }
 
         #endregion
 
         #region 参数
 
+        /// <summary>
+        /// 值输入对话框
+        /// </summary>
         private InputValueDialog p_inputDialog;
 
         private StringBuilder p_strBuffer;
@@ -166,6 +209,14 @@ namespace Cheng.ModifyMaster
         #region 文件栏
 
         /// <summary>
+        /// 菜单栏 - 文件
+        /// </summary>
+        private ToolStripMenuItem Col_MenuItem_File
+        {
+            get => col_menuItem_File;
+        }
+
+        /// <summary>
         /// 菜单栏 - 文件 - 退出
         /// </summary>
         private ToolStripMenuItem Col_MenuItem_File_Exit
@@ -200,6 +251,30 @@ namespace Cheng.ModifyMaster
         #endregion
 
         #region 设置栏
+
+        /// <summary>
+        /// 菜单栏 - 选项
+        /// </summary>
+        private ToolStripMenuItem Col_MenuItem_Config
+        {
+            get => col_menuItem_config;
+        }
+
+        /// <summary>
+        /// 菜单栏 - 选项 - 选择字体
+        /// </summary>
+        private ToolStripMenuItem Col_MenuItem_Config_SelectFont
+        {
+            get => col_menuItem_config_selectFont;
+        }
+
+        /// <summary>
+        /// 菜单栏 - 选项 - 选择语言
+        /// </summary>
+        private ToolStripMenuItem Col_MenuItem_Config_SelectLan
+        {
+            get => col_menuItem_config_selectLanguage;
+        }
 
         #endregion
 
@@ -255,6 +330,14 @@ namespace Cheng.ModifyMaster
             get => col_openFileDialog;
         }
 
+        /// <summary>
+        /// 控件 - 选择字体对话框
+        /// </summary>
+        private FontDialog Col_FontDialog
+        {
+            get => col_fontDialog;
+        }
+
         #endregion
 
         #endregion
@@ -293,26 +376,27 @@ namespace Cheng.ModifyMaster
 
         static string f_toDataTypeText(DataType dataType)
         {
+            var arg = InitArgs.Args;
             switch (dataType)
             {
                 case DataType.Int32:
-                    return "32位整数";
+                    return arg.GetLan("column_moftype_int32");
                 case DataType.UInt32:
-                    return "32位正整数";
+                    return arg.GetLan("column_moftype_uint32");
                 case DataType.Int64:
-                    return "64位整数";
+                    return arg.GetLan("column_moftype_int64");
                 //case DataType.UInt64:
                 //    return "64位正整数";
                 case DataType.Float:
-                    return "单浮点";
+                    return arg.GetLan("column_moftype_float");
                 case DataType.Double:
-                    return "双浮点";
+                    return arg.GetLan("column_moftype_double");
                 case DataType.Int16:
-                    return "16位整数";
+                    return arg.GetLan("column_moftype_int16");
                 case DataType.UInt16:
-                    return "16位正整数";
+                    return arg.GetLan("column_moftype_uint16");
                 case DataType.Byte:
-                    return "字节值";
+                    return arg.GetLan("column_moftype_byte");
                 default:
                     return "ERROR";
             }
@@ -342,7 +426,11 @@ namespace Cheng.ModifyMaster
                 }
                 if (havAuthor)
                 {
-                    if(havName) sb.Append("  作者:");
+                    if (havName)
+                    {
+                        sb.Append(args.GetLan("title_information_author"));
+                        sb.Append(" :");
+                    }
                     sb.Append(inf.author);
                 }
                 var text = Col_Label_Title.Text;
@@ -355,7 +443,7 @@ namespace Cheng.ModifyMaster
             else
             {
                 
-                Col_Label_Title.Text = "未打开修改配置";
+                Col_Label_Title.Text = args.GetLan("title_information_defname");
             }
 
         }
@@ -476,7 +564,7 @@ namespace Cheng.ModifyMaster
                             string text;
                             if (string.IsNullOrEmpty(mod.ViewValue))
                             {
-                                text = "[无]";
+                                text = string.Empty;
                             }
                             else
                             {
@@ -564,7 +652,7 @@ namespace Cheng.ModifyMaster
            
             if (string.IsNullOrEmpty(mod.ViewValue))
             {
-                text = "[无]";
+                text = string.Empty;
             }
             else
             {
@@ -599,7 +687,8 @@ namespace Cheng.ModifyMaster
                 //打开进程
                 StringBuilder sb = p_strBuffer;
                 sb.Clear();
-                sb.Append("进程: ");
+                sb.Append(args.GetLan("title_openPro_name"));
+                sb.Append(':');
                 sb.Append(args.processModify.OpenProcessName);
                 sb.Append(' ');
                 sb.Append(args.processModify.OpenProcessID);
@@ -613,7 +702,7 @@ namespace Cheng.ModifyMaster
             }
             else
             {
-                Col_Label_ProcessName.Text = "未打开进程";
+                Col_Label_ProcessName.Text = args.GetLan("title_processNotOpen");
             }
 
         }
@@ -645,7 +734,7 @@ namespace Cheng.ModifyMaster
         {
             var openFile = Col_OpenFileDialpg;
 
-            openFile.Title = "选择一个修改配置";
+            //openFile.Title = "选择一个修改配置";
 
             var re = openFile.ShowDialog(this);
 
@@ -697,17 +786,20 @@ namespace Cheng.ModifyMaster
             int re;
             try
             {
-                
+                var args = InitArgs.Args;
                 using (ProcessListSelectForm pform = new ProcessListSelectForm())
                 {
                     pform.FilterWindowsProcess = true;
                     pform.Font = this.Font;
+                    pform.OKButtonText = args.GetLan("button_ok");
+                    pform.CancelButtonText = args.GetLan("button_cancel");
+                    pform.Title = args.GetLan("menuItem_file_openProcess");
                     re = pform.ShowSelectProDialog(this);
                 }
 
                 if(re != 0)
                 {
-                    var args = InitArgs.Args;
+                    
                     if (args.processModify.OpenProcessByID(re))
                     {
                         f_updateOpenProcess();
@@ -874,7 +966,36 @@ namespace Cheng.ModifyMaster
 
         #endregion
 
-        #region
+        #region 选项菜单
+
+        /// <summary>
+        /// 选项 - 选择字体
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="e"></param>
+        private void fe_MenuItem_Config_SelectFont_Click(object obj, EventArgs e)
+        {
+            var dialog = Col_FontDialog;
+            dialog.Font = this.Font;
+
+            var re = dialog.ShowDialog(this);
+
+            if(re == DialogResult.OK)
+            {
+                this.Font = dialog.Font;
+            }
+
+        }
+
+        /// <summary>
+        /// 选项 - 选择语言
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="e"></param>
+        private void fe_MenuItem_Config_SelectLan_Click(object obj, EventArgs e)
+        {
+            ShowMegInf("提示", "暂未实现");
+        }
 
         #endregion
 
@@ -1037,6 +1158,7 @@ namespace Cheng.ModifyMaster
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             StopViewTimer();
+
             base.OnFormClosing(e);
         }
 
