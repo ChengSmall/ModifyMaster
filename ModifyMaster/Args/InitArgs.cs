@@ -95,9 +95,9 @@ namespace Cheng.ModifyMaster
 
         private void f_initDebugFile()
         {
-            debugLogPrint = null;
-            debugLogPrint = Console.Out;
-            return;
+            //debugLogPrint = null;
+            //debugLogPrint = Console.Out;
+            //return;
 
             try
             {
@@ -153,7 +153,7 @@ namespace Cheng.ModifyMaster
 
             languageConfigFilePath = Path.Combine(languageDirectory, "language.config.json");
             languageList = new List<LanguageInf>(2);
-            tempTask = null;
+            //tempTask = null;
             p_allHotKeys = new Dictionary<string, Keys>(100);
             f_initAllHotkeys();
             //p_keyMessageList = new Queue<KeyHook.KeyHookArgs>();
@@ -574,6 +574,7 @@ namespace Cheng.ModifyMaster
         {
             if (File.Exists(appMyConfigFilePath))
             {
+                //DebugPrintLine("检测到配置文件");
                 configFile.LoadToJsonFile(appMyConfigFilePath, jsonParser);
             }
         }
@@ -647,6 +648,9 @@ namespace Cheng.ModifyMaster
             
         }
 
+        /// <summary>
+        /// 初始化音效
+        /// </summary>
         private void f_initAudioEffect()
         {
             p_audioEffects.LoadAudioByDefPath();
@@ -796,7 +800,7 @@ namespace Cheng.ModifyMaster
         {
             DebugPrintLineF(DateTime.Now.ToString() + ": " + "初始化后台修改线程");
             p_loopFunction = new ModifyLoop();
-            p_loopFunction.FramesPerSecond = 30;
+            p_loopFunction.FramesPerSecond = 20;
             p_modThread = new Thread(p_loopFunction.LoopFunc);
             p_modThread.IsBackground = true;
             p_modThread.TrySetApartmentState(ApartmentState.MTA);

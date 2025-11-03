@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{27BEF5F9-89E1-47DB-AD0D-66549A3AF8BE}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>Cheng.ModifyMaster</RootNamespace>
     <AssemblyName>ModifyMaster</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -158,9 +158,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if not exist "$(TargetDir)dll\" md "$(TargetDir)dll\"
+    <PostBuildEvent>if "Release" == "$(ConfigurationName)" (
+if not exist "$(TargetDir)dll\" md "$(TargetDir)dll\"
 
 move /y "$(TargetDir)*.dll" "$(TargetDir)dll\"
-del /q "$(TargetDir)*.xml"</PostBuildEvent>
+del /q "$(TargetDir)*.xml"
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>

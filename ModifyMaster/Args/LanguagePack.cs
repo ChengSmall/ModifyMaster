@@ -21,7 +21,7 @@ namespace Cheng.ModifyMaster
 
         public LanguagePack()
         {
-            p_lans = new Dictionary<string, string>(48, new BinaryStringEqualComparer());
+            p_lans = new Dictionary<string, string>(100, new BinaryStringEqualComparer());
         }
 
         #endregion

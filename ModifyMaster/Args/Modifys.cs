@@ -11,7 +11,6 @@ using System.Windows.Forms;
 namespace Cheng.ModifyMaster
 {
 
-
     /*
     type可填如下参数：
     "fixed" => 表示将其地址的值固定为value参数，使用选项或热键控制开关
@@ -20,6 +19,8 @@ namespace Cheng.ModifyMaster
     "add" => 表示每修改一次在值的基础上添加value，使用按钮或热键修改一次
     "sub" => 表示每修改一次在值的基础上减少value，使用按钮或热键修改一次
     "fixedSelf" => 表示在打开开关的一刻，将值固定为当前值（忽略value参数）
+    "fixedSelfUp" => 表示在打开开关的一刻，将值固定为不小于当前值的值（忽略value参数）
+    "fixedSelfDown" => 表示在打开开关的一刻，将值固定为不大于当前值的值（忽略value参数）
     */
 
     /// <summary>
@@ -60,7 +61,39 @@ namespace Cheng.ModifyMaster
         /// <summary>
         /// 将值固定为当前值（忽略value参数）
         /// </summary>
-        FixedSelf
+        FixedSelf,
+
+        /// <summary>
+        /// 将值固定为当前值并不锁定增加（忽略value参数）
+        /// </summary>
+        FixedSelfUp,
+
+        /// <summary>
+        /// 将值固定为当前值并不锁定减少（忽略value参数）
+        /// </summary>
+        FixedSelfDown,
+    }
+
+    public static class ModifyAddressTypeExtend
+    {
+
+        /// <summary>
+        /// 当前值是否为Self类型（忽略value值的类型）
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsSelfValue(this ModifyAddressType type)
+        {
+            switch (type)
+            {
+                case ModifyAddressType.FixedSelf:
+                case ModifyAddressType.FixedSelfUp:
+                case ModifyAddressType.FixedSelfDown:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     /// <summary>
@@ -199,10 +232,14 @@ namespace Cheng.ModifyMaster
                 if (!value)
                 {
                     //关闭
-                    if (ModifyType == ModifyAddressType.FixedSelf)
+                    //self类型重置恒定值依赖
+                    switch (ModifyType)
                     {
-                        //self类型重置恒定值依赖
-                        Value = null;
+                        case ModifyAddressType.FixedSelf:
+                        case ModifyAddressType.FixedSelfUp:
+                        case ModifyAddressType.FixedSelfDown:
+                            Value = null;
+                            break;
                     }
                 }
                 p_toggle = value;
@@ -476,6 +513,8 @@ namespace Cheng.ModifyMaster
                 "add" => 表示每修改一次在值的基础上添加value，使用按钮或热键修改一次
                 "sub" => 表示每修改一次在值的基础上减少value，使用按钮或热键修改一次
                 "fixedSelf" => 表示在打开开关的一刻，将值固定为当前值（忽略value参数）
+            "fixedSelfUp" => 表示在打开开关的一刻，将值固定为不小于当前值的值（忽略value参数）
+            "fixedSelfDown" => 表示在打开开关的一刻，将值固定为不大于当前值的值（忽略value参数）
                 */
                 switch (jaddress["type"].String)
                 {
@@ -499,6 +538,12 @@ namespace Cheng.ModifyMaster
                         break;
                     case "fixedSelf":
                         ModifyType = ModifyAddressType.FixedSelf;
+                        break;
+                    case "fixedSelfUp":
+                        ModifyType = ModifyAddressType.FixedSelfUp;
+                        break;
+                    case "fixedSelfDown":
+                        ModifyType = ModifyAddressType.FixedSelfDown;
                         break;
                     default:
                         return false;

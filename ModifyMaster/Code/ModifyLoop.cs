@@ -25,6 +25,7 @@ using Cheng.DataStructure.NumGenerators;
 
 using DNum = Cheng.DataStructure.NumGenerators.DynamicNumber;
 using System.Windows.Forms;
+using Cheng.Algorithm.Sorts.Comparers;
 
 namespace Cheng.ModifyMaster
 {
@@ -43,6 +44,9 @@ namespace Cheng.ModifyMaster
             p_keyEventDown = false;
             p_keyDown = false;
             p_nowDowns = new List<Keys>();
+
+            p_defDNumComp = Comparer<DNum>.Default;
+            p_revDNumComp = new InvertComparer<DNum>(p_defDNumComp, true);
         }
 
         #endregion
@@ -52,6 +56,16 @@ namespace Cheng.ModifyMaster
         private ProcessModify p_mod;
 
         private List<Keys> p_nowDowns;
+
+        /// <summary>
+        /// DNum常规比较器
+        /// </summary>
+        private readonly Comparer<DNum> p_defDNumComp;
+
+        /// <summary>
+        /// DNum反向比较器
+        /// </summary>
+        private readonly InvertComparer<DNum> p_revDNumComp;
 
         private bool p_loopPrint;
 
@@ -672,6 +686,157 @@ namespace Cheng.ModifyMaster
 
         }
 
+        private void f_modFixedSelfUpAndDown(ModifyItem modifyItem, IComparer<DNum> comparer)
+        {
+            if (!modifyItem.Toggle)
+            {
+                return;
+            }
+
+            var pro = p_mod.ProOperation;
+            if (pro is null) return;
+
+            StringBuilder sb;
+
+            var address = modifyItem.Address;
+
+            //var value = modifyItem.Value;
+
+            ProcessAddress proAddress;
+
+            if (!p_mod.Addresses.Addresses.TryGetValue(address.id, out proAddress))
+            {
+                //没有找到地址ID
+                p_loopPrint = true;
+                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:未找到地址ID");
+                return;
+            }
+            //地址
+            IntPtr ptr;
+
+            try
+            {
+                ptr = proAddress.GetAddress(p_mod);
+            }
+            catch (Exception ex)
+            {
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    sb = new StringBuilder(64);
+                    InitArgs.PrintException(ex, sb);
+                    InitArgs.Args.DebugPrintLine(sb.ToString());
+                }
+                return;
+            }
+
+            if (ptr == IntPtr.Zero)
+            {
+                p_loopPrint = true;
+                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                return;
+            }
+
+            //获取要设置的值
+            DNum setValue;
+
+            var dataType = modifyItem.AddressDataType;
+
+            if (p_mod.IsOpenProcess)
+            {
+                pro = p_mod.ProOperation;
+                if (pro is null)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine("进程操作类是null");
+                    return;
+                }
+                //获取值
+                var value = modifyItem.Value;
+                DNum reValue;
+                if (value is null)
+                {
+                    //初次打开
+                    if (f_read(pro, ptr, dataType, out reValue))
+                    {
+                        value = new NumGeneratorValue(reValue);
+                        modifyItem.Value = value;
+                    }
+                    else
+                    {
+                        p_loopPrint = true;
+                        InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取地址值");
+                        return;
+                    }
+                }
+
+                var tb = modifyItem.TernaryConditionInvoke(false);
+                if (tb.HasValue)
+                {
+                    //满足条件
+                    if (tb.Value)
+                    {
+                        modifyItem.ViewCondition = ModifyItem.ViewConditionYes;
+                       // goto IsOper;
+                    }
+                    else
+                    {
+                        //未满足条件
+                        //play = false;
+                        modifyItem.ViewCondition = ModifyItem.ViewConditionNo;
+                        goto isOperOver;
+                    }
+                }
+                else
+                {
+                    //无条件
+                    //play = true;
+                    //setValue = value.Generate();
+                    //f_write(pro, ptr, dataType, setValue);
+                    //modifyItem.ViewValue = setValue.ToString();
+                    modifyItem.ViewCondition = ModifyItem.ViewConditionNone;
+                    //goto IsOper;
+                }
+
+                IsOper:
+
+                {
+                    //读取当前值
+                    if (f_read(pro, ptr, dataType, out reValue))
+                    {
+                        //
+                        var nowValue = modifyItem.Value.Generate();
+                        if (comparer.Compare(nowValue, reValue) < 0)
+                        {
+                            //当前保存的值"小于"内存
+                            setValue = reValue;
+                            //保存新的值
+                            modifyItem.Value = new NumGeneratorValue(reValue);
+                        }
+                        else
+                        {
+                            setValue = nowValue;
+                        }
+                    }
+                    else
+                    {
+                        p_loopPrint = true;
+                        InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取地址值");
+                        return;
+                    }
+                    //play = true;
+                    //setValue = value.Generate();
+                    f_write(pro, ptr, dataType, setValue);
+                    modifyItem.ViewValue = setValue.ToString();
+                }
+
+                isOperOver:;
+
+
+            }
+
+        }
+
         #endregion
 
         private void f_update()
@@ -695,6 +860,16 @@ namespace Cheng.ModifyMaster
                         if(modType == ModifyAddressType.FixedSelf)
                         {
                             f_modFixedSelf(mod);
+                        }
+                        else if (modType == ModifyAddressType.FixedSelfUp)
+                        {
+                            //InitArgs.Args.DebugPrintLine("即将进行一次 fixedSelfUp 修改");
+                            f_modFixedSelfUpAndDown(mod, p_defDNumComp);
+                        }
+                        else if (modType == ModifyAddressType.FixedSelfDown)
+                        {
+                            //InitArgs.Args.DebugPrintLine("即将进行一次 fixedSelfUp 修改");
+                            f_modFixedSelfUpAndDown(mod, p_revDNumComp);
                         }
                         else
                         {

@@ -222,7 +222,7 @@ namespace Cheng.ModifyMaster
 
             try
             {
-                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
                 {
                     using (StreamReader sread = new StreamReader(file, Encoding.UTF8, false, 1024 * 2, true))
                     {
