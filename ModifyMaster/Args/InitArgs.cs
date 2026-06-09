@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Threading;
 using System.Windows.Forms;
+using System.Diagnostics;
+
 using System.Globalization;
 using Cheng.Json.GeneratorNumbers;
 using Cheng.Algorithm.Collections;
@@ -32,7 +34,7 @@ namespace Cheng.ModifyMaster
 
         #region 单例
 
-        private readonly static InitArgs sp_args = new InitArgs();
+        private static InitArgs sp_args;
 
         /// <summary>
         /// 获取参数
@@ -47,6 +49,11 @@ namespace Cheng.ModifyMaster
                 //}
                 return sp_args;
             }
+        }
+
+        public static void Init(string[] args)
+        {
+            sp_args = new InitArgs();
         }
 
         #endregion
@@ -95,14 +102,20 @@ namespace Cheng.ModifyMaster
 
         private void f_initDebugFile()
         {
-            //debugLogPrint = null;
+            debugLogPrint = null;
             //debugLogPrint = Console.Out;
             //return;
-
             try
             {
+#if DEBUG
+                if (Debugger.IsAttached)
+                {
+                    //debugLogPrint = Console.Out;
+                    return;
+                }
+#endif
                 if (appConfigXml is null) return;
-
+                
                 var root = appConfigXml.DocumentElement;
                 bool debug = false;
                 try
@@ -122,13 +135,25 @@ namespace Cheng.ModifyMaster
                 {
                     debug = false;
                 }
-
                 XmlDEBUG:
+#if DEBUG
+                debug = true;
+#endif
                 if (debug)
                 {
                     StreamWriter swr;
                     var filePath = Path.Combine(this.rootDirectory, "debug.log");
-                    swr = new StreamWriter(filePath, false, Encoding.UTF8, 1024 * 2);
+
+                    FileStream logWrFile = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    try
+                    {
+                        swr = new StreamWriter(logWrFile, Encoding.UTF8, 1024 * 2, false);
+                    }
+                    catch (Exception)
+                    {
+                        logWrFile.Close();
+                        throw;
+                    }
                     debugLogPrint = swr;
                 }
                 //debugLogPrint = Console.Out;
@@ -157,7 +182,9 @@ namespace Cheng.ModifyMaster
             p_allHotKeys = new Dictionary<string, Keys>(100);
             f_initAllHotkeys();
             //p_keyMessageList = new Queue<KeyHook.KeyHookArgs>();
-            jsonParser = new JsonParserDefault();
+            var jp = new JsonParserDefault();
+            jp.ParserMaxDepth = 512;
+            jsonParser = jp;
             //jsonValueGenerator = new JsonValueGenerator();
             //streamParser = new StreamParserDefault();
             try
@@ -293,7 +320,7 @@ namespace Cheng.ModifyMaster
         #region 功能参数
 
         /// <summary>
-        /// xml解析器
+        /// xml标准项解析器
         /// </summary>
         public readonly XmlStandardItemText xmlTextParser;
 
@@ -800,7 +827,7 @@ namespace Cheng.ModifyMaster
         {
             DebugPrintLineF(DateTime.Now.ToString() + ": " + "初始化后台修改线程");
             p_loopFunction = new ModifyLoop();
-            p_loopFunction.FramesPerSecond = 20;
+            p_loopFunction.FramesPerSecond = 25;
             p_modThread = new Thread(p_loopFunction.LoopFunc);
             p_modThread.IsBackground = true;
             p_modThread.TrySetApartmentState(ApartmentState.MTA);
@@ -1141,7 +1168,7 @@ namespace Cheng.ModifyMaster
                 p_loopFunction.Exit();
                 this.debugLogPrint?.Close();
             }
-            
+
             p_keyHook = null;
             this.debugLogPrint = null;
             p_audioEffects = null;

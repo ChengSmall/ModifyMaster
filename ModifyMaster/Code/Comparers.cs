@@ -1,3 +1,4 @@
+using Cheng.Systems;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -136,6 +137,10 @@ namespace Cheng.ModifyMaster
     public unsafe sealed class ModuleComparer : Comparer<ProcessModule>
     {
 
+        public ModuleComparer()
+        {
+        }
+
         public override int Compare(ProcessModule x, ProcessModule y)
         {
             if (x == (object)y) return 0;
@@ -148,10 +153,8 @@ namespace Cheng.ModifyMaster
             {
                 return 1;
             }
-
-            var xd = (void*)x.BaseAddress;
-            var yd = (void*)y.BaseAddress;
-
+            var xd = (ulong)x.BaseAddress.ToPointer();
+            var yd = (ulong)y.BaseAddress.ToPointer();
             return xd < yd ? -1 : (xd == yd ? 0 : 1);
         }
     }

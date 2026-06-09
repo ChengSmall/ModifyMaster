@@ -230,7 +230,10 @@ namespace Cheng.ModifyMaster
                     {
                         return IntPtr.Zero; //失败
                     }
-
+                    if(point.IsEmpty)
+                    {
+                        return IntPtr.Zero;
+                    }
                     //访问后添加偏移
                     ptr = ((byte*)point) + p_offsets[i];
 
@@ -240,6 +243,10 @@ namespace Cheng.ModifyMaster
                     if (!pro.Read<Pointer32>(new IntPtr(ptr), out Pointer32 point))
                     {
                         return IntPtr.Zero; //失败
+                    }
+                    if (point.IsEmpty)
+                    {
+                        return IntPtr.Zero;
                     }
 
                     ptr = ((byte*)point) + p_offsets[i];

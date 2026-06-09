@@ -22,10 +22,11 @@ using Cheng.IO;
 using Cheng.LoopThreads;
 using Cheng.Windows.Hooks;
 using Cheng.DataStructure.NumGenerators;
-
-using DNum = Cheng.DataStructure.NumGenerators.DynamicNumber;
 using System.Windows.Forms;
 using Cheng.Algorithm.Sorts.Comparers;
+using System.Threading;
+
+using DNum = Cheng.DataStructure.NumGenerators.DynamicNumber;
 
 namespace Cheng.ModifyMaster
 {
@@ -242,30 +243,6 @@ namespace Cheng.ModifyMaster
         private void f_modGR(ModifyItem modifyItem, ModifyAddressType modifyType)
         {
 
-            if (!modifyItem.Toggle)
-            {
-                return;
-            }
-            bool? tb = modifyItem.TernaryConditionInvoke(false);
-
-            if (tb.HasValue)
-            {
-                if (tb.Value)
-                {
-                    modifyItem.ViewCondition = ModifyItem.ViewConditionYes;
-                }
-                else
-                {
-                    //不符合条件
-                    modifyItem.ViewCondition = ModifyItem.ViewConditionNo;
-                    return;
-                }
-            }
-            else
-            {
-                modifyItem.ViewCondition = ModifyItem.ViewConditionNone;
-            }
-
             var pro = p_mod.ProOperation;
             if (pro is null) return;
 
@@ -280,8 +257,11 @@ namespace Cheng.ModifyMaster
             if (!p_mod.Addresses.Addresses.TryGetValue(address.id, out proAddress))
             {
                 //没有找到地址ID
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:未找到地址ID");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:未找到地址ID");
+                }
                 return;
             }
             //地址
@@ -314,6 +294,27 @@ namespace Cheng.ModifyMaster
                 }
                 return;
             }
+            modifyItem.ViewValue = setValue;
+
+            bool? tb = modifyItem.TernaryConditionInvoke(false);
+
+            if (tb.HasValue)
+            {
+                if (tb.Value)
+                {
+                    modifyItem.ViewCondition = ModifyItem.ViewConditionYes;
+                }
+                else
+                {
+                    //不符合条件
+                    modifyItem.ViewCondition = ModifyItem.ViewConditionNo;
+                    return;
+                }
+            }
+            else
+            {
+                modifyItem.ViewCondition = ModifyItem.ViewConditionNone;
+            }
 
             try
             {
@@ -333,8 +334,12 @@ namespace Cheng.ModifyMaster
 
             if (ptr == IntPtr.Zero)
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                //if (InitArgs.Args.CanDebug)
+                //{
+                //    p_loopPrint = true;
+                //    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                //}
+
                 return;
             }
 
@@ -350,28 +355,31 @@ namespace Cheng.ModifyMaster
                     return;
                 }
 
-                switch (modifyType)
+                //if (modifyItem.Toggle)
                 {
-                    case ModifyAddressType.Fixed:
-                        f_fixed(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    case ModifyAddressType.FixedUp:
-                        f_fixedUp(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    case ModifyAddressType.FixedDown:
-                        f_fixedDown(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    case ModifyAddressType.Once:
-                        f_once(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    case ModifyAddressType.Add:
-                        f_add(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    case ModifyAddressType.Sub:
-                        f_sub(modifyItem, pro, ptr, dataType, setValue);
-                        break;
-                    default:
-                        break;
+                    switch (modifyType)
+                    {
+                        case ModifyAddressType.Fixed:
+                            f_fixed(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        case ModifyAddressType.FixedUp:
+                            f_fixedUp(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        case ModifyAddressType.FixedDown:
+                            f_fixedDown(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        case ModifyAddressType.Once:
+                            f_once(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        case ModifyAddressType.Add:
+                            f_add(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        case ModifyAddressType.Sub:
+                            f_sub(modifyItem, pro, ptr, dataType, setValue);
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
             }
@@ -380,17 +388,33 @@ namespace Cheng.ModifyMaster
 
         private void f_fixed(ModifyItem modifyItem, ProcessOperation pro, IntPtr ptr, DataType dataType, DNum value)
         {
-
             bool b;
+
+            if (!modifyItem.Toggle)
+            {
+                if(f_read(pro, ptr, dataType, out var re))
+                {
+                    modifyItem.ViewValue = re;
+                }
+                else
+                {
+                    modifyItem.ViewValue = re;
+                }
+                return;
+            }
+            modifyItem.ViewValue = value;
             b = f_write(pro, ptr, dataType, value);
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
+                
             }
             else
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                }
             }
         }
 
@@ -409,24 +433,36 @@ namespace Cheng.ModifyMaster
                     value = reValue;
                 }
 
-                b = f_write(pro, ptr, dataType, reValue);
+                if (!modifyItem.Toggle)
+                {
+                    modifyItem.ViewValue = value;
+                    return;
+                }
+                b = f_write(pro, ptr, dataType, value);
             }
             else
             {
-                //读取错误不写入
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    //读取错误不写入
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
+                }
                 return;
             }
+            modifyItem.ViewValue = value;
 
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
+                //modifyItem.ViewValueText = value.ToString();
             }
             else
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                }
             }
 
         }
@@ -445,32 +481,51 @@ namespace Cheng.ModifyMaster
                 {
                     value = reValue;
                 }
-
+                if (!modifyItem.Toggle)
+                {
+                    modifyItem.ViewValue = reValue;
+                    return;
+                }
                 b = f_write(pro, ptr, dataType, value);
             }
-
             else
             {
                 //读取错误不写入
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
+                }
                 return;
             }
-
+            modifyItem.ViewValue = value;
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
             }
             else
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                }
             }
         }
 
         private void f_once(ModifyItem modifyItem, ProcessOperation pro, IntPtr ptr, DataType dataType, DNum value)
         {
-
+            if (!modifyItem.Toggle)
+            {
+                if (f_read(pro, ptr, dataType, out var re))
+                {
+                    modifyItem.ViewValue = re;
+                }
+                else
+                {
+                    modifyItem.ViewValue = re;
+                }
+                return;
+            }
             modifyItem.Toggle = false;
             bool b;
             
@@ -483,7 +538,7 @@ namespace Cheng.ModifyMaster
             //{
             //    //写入
             //    //value -= reValue;
-                
+
             //}
             //else
             //{
@@ -492,22 +547,24 @@ namespace Cheng.ModifyMaster
             //    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
             //    return;
             //}
-
+            modifyItem.ViewValue = value;
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
+                //modifyItem.ViewValueText = value.ToString();
             }
             else
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
+                }
             }
         }
 
-
         private void f_add(ModifyItem modifyItem, ProcessOperation pro, IntPtr ptr, DataType dataType, DNum value)
         {
-
+            var lastV = modifyItem.ViewValue;
             modifyItem.Toggle = false;
             bool b;
             DNum reValue;
@@ -516,8 +573,13 @@ namespace Cheng.ModifyMaster
             if (b)
             {
                 //写入
+                if (!modifyItem.Toggle)
+                {
+                    modifyItem.ViewValue = reValue;
+                    return;
+                }
                 value += reValue;
-                f_write(pro, ptr, dataType, value);
+                b = f_write(pro, ptr, dataType, value);
             }
             else
             {
@@ -526,13 +588,14 @@ namespace Cheng.ModifyMaster
                 InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据读取失败 类型:{dataType.ToString()} 位置:{((long)ptr).ToString("X")}");
                 return;
             }
-
+            
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
+                modifyItem.ViewValue = value;
             }
             else
             {
+                modifyItem.ViewValue = lastV;
                 p_loopPrint = true;
                 InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
             }
@@ -540,7 +603,7 @@ namespace Cheng.ModifyMaster
 
         private void f_sub(ModifyItem modifyItem, ProcessOperation pro, IntPtr ptr, DataType dataType, DNum value)
         {
-
+            var lastV = modifyItem.ViewValue;
             modifyItem.Toggle = false;
             bool b;
             DNum reValue;
@@ -548,8 +611,14 @@ namespace Cheng.ModifyMaster
             b = f_read(pro, ptr, dataType, out reValue);
             if (b)
             {
+                if (!modifyItem.Toggle)
+                {
+                    modifyItem.ViewValue = reValue;
+                    return;
+                }
                 //写入
-                 value -= reValue;
+                value -= reValue;
+
                 f_write(pro, ptr, dataType, value);
             }
             else
@@ -562,10 +631,11 @@ namespace Cheng.ModifyMaster
 
             if (b)
             {
-                modifyItem.ViewValue = value.ToString();
+                modifyItem.ViewValue = value;
             }
             else
             {
+                modifyItem.ViewValue = lastV;
                 p_loopPrint = true;
                 InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:数据写入失败 类型:{dataType.ToString()}");
             }
@@ -573,10 +643,6 @@ namespace Cheng.ModifyMaster
 
         private void f_modFixedSelf(ModifyItem modifyItem)
         {
-            if (!modifyItem.Toggle)
-            {
-                return;
-            }
 
             var pro = p_mod.ProOperation;
             if (pro is null) return;
@@ -592,8 +658,11 @@ namespace Cheng.ModifyMaster
             if (!p_mod.Addresses.Addresses.TryGetValue(address.id, out proAddress))
             {
                 //没有找到地址ID
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:未找到地址ID");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:未找到地址ID");
+                }
                 return;
             }
             //地址
@@ -617,8 +686,11 @@ namespace Cheng.ModifyMaster
 
             if (ptr == IntPtr.Zero)
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                //if (InitArgs.Args.CanDebug)
+                //{
+                //    p_loopPrint = true;
+                //    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                //}
                 return;
             }
 
@@ -646,6 +718,7 @@ namespace Cheng.ModifyMaster
                     {
                         value = new NumGeneratorValue(reValue);
                         modifyItem.Value = value;
+                        modifyItem.ViewValue = reValue;
                     }
                     else
                     {
@@ -662,8 +735,8 @@ namespace Cheng.ModifyMaster
                     {
                         //play = true;
                         setValue = value.Generate();
-                        f_write(pro, ptr, dataType, setValue);
-                        modifyItem.ViewValue = setValue.ToString();
+                        if (modifyItem.Toggle) f_write(pro, ptr, dataType, setValue);
+                        modifyItem.ViewValue = setValue;
                         modifyItem.ViewCondition = ModifyItem.ViewConditionYes;
                     }
                     else
@@ -676,11 +749,10 @@ namespace Cheng.ModifyMaster
                 {
                     //play = true;
                     setValue = value.Generate();
-                    f_write(pro, ptr, dataType, setValue);
-                    modifyItem.ViewValue = setValue.ToString();
+                    if (modifyItem.Toggle) f_write(pro, ptr, dataType, setValue);
+                    modifyItem.ViewValue = setValue;
                     modifyItem.ViewCondition = ModifyItem.ViewConditionNone;
                 }
-               
 
             }
 
@@ -688,11 +760,7 @@ namespace Cheng.ModifyMaster
 
         private void f_modFixedSelfUpAndDown(ModifyItem modifyItem, IComparer<DNum> comparer)
         {
-            if (!modifyItem.Toggle)
-            {
-                return;
-            }
-
+            
             var pro = p_mod.ProOperation;
             if (pro is null) return;
 
@@ -732,8 +800,11 @@ namespace Cheng.ModifyMaster
 
             if (ptr == IntPtr.Zero)
             {
-                p_loopPrint = true;
-                InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                if (InitArgs.Args.CanDebug)
+                {
+                    p_loopPrint = true;
+                    InitArgs.Args.DebugPrintLine($"{modifyItem.Text}:无法读取\"{address.id}\"指向的地址");
+                }
                 return;
             }
 
@@ -761,6 +832,7 @@ namespace Cheng.ModifyMaster
                     {
                         value = new NumGeneratorValue(reValue);
                         modifyItem.Value = value;
+                        modifyItem.ViewValue = reValue;
                     }
                     else
                     {
@@ -826,12 +898,12 @@ namespace Cheng.ModifyMaster
                     }
                     //play = true;
                     //setValue = value.Generate();
-                    f_write(pro, ptr, dataType, setValue);
-                    modifyItem.ViewValue = setValue.ToString();
+
+                    if(modifyItem.Toggle) f_write(pro, ptr, dataType, setValue);
+                    modifyItem.ViewValue = setValue;
                 }
 
                 isOperOver:;
-
 
             }
 
@@ -863,19 +935,16 @@ namespace Cheng.ModifyMaster
                         }
                         else if (modType == ModifyAddressType.FixedSelfUp)
                         {
-                            //InitArgs.Args.DebugPrintLine("即将进行一次 fixedSelfUp 修改");
                             f_modFixedSelfUpAndDown(mod, p_defDNumComp);
                         }
                         else if (modType == ModifyAddressType.FixedSelfDown)
                         {
-                            //InitArgs.Args.DebugPrintLine("即将进行一次 fixedSelfUp 修改");
                             f_modFixedSelfUpAndDown(mod, p_revDNumComp);
                         }
                         else
                         {
                             f_modGR(mod, modType);
                         }
-                        
                     }
                     catch (Exception ex)
                     {
@@ -888,7 +957,6 @@ namespace Cheng.ModifyMaster
                             args.DebugPrintLineF(sb.ToString());
                         }
                     }
-                   
                 }
 
             }
@@ -1091,6 +1159,12 @@ namespace Cheng.ModifyMaster
         {
             //var args = InitArgs.Args;
             //args.KeyEvent -= fe_keyHook;
+        }
+
+        protected override void ThreadSleep(TimeSpan waitTime)
+        {
+            if (waitTime < TimeSpan.Zero) waitTime = TimeSpan.Zero;
+            Thread.Sleep(waitTime);
         }
 
         #endregion

@@ -66,9 +66,6 @@ namespace Cheng.ModifyMaster
                         case "int64":
                             nmod.DataType = DataType.Int64;
                             break;
-                        //case "uint64":
-                        //    nmod.DataType = DataType.UInt64;
-                        //    break;
                         case "float":
                             nmod.DataType = DataType.Float;
                             break;

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Cheng.DataStructure.NumGenerators;
 using Cheng.Windows.Forms;
 using Cheng.Windows.Processes;
 
@@ -426,10 +427,11 @@ namespace Cheng.ModifyMaster
                 }
                 if (havAuthor)
                 {
+                    sb.Append(' ');
                     if (havName)
                     {
                         sb.Append(args.GetLan("title_information_author"));
-                        sb.Append(" :");
+                        sb.Append(": ");
                     }
                     sb.Append(inf.author);
                 }
@@ -484,6 +486,15 @@ namespace Cheng.ModifyMaster
 
             }
 
+        }
+
+        static string ToValueTextView(DynamicNumber? dn)
+        {
+            if (dn.HasValue)
+            {
+                return dn.Value.ToString();
+            }
+            return "null";
         }
 
         /// <summary>
@@ -562,14 +573,8 @@ namespace Cheng.ModifyMaster
 
                             //值 sub3
                             string text;
-                            if (string.IsNullOrEmpty(mod.ViewValue))
-                            {
-                                text = string.Empty;
-                            }
-                            else
-                            {
-                                text = mod.ViewValue;
-                            }
+                            text = ToValueTextView(mod.ViewValue);
+                            
                             if (vitem.SubItems[3].Text != text)
                             {
                                 vitem.SubItems[3].Text = text;
@@ -650,14 +655,16 @@ namespace Cheng.ModifyMaster
 
             //值
            
-            if (string.IsNullOrEmpty(mod.ViewValue))
-            {
-                text = string.Empty;
-            }
-            else
-            {
-                text = mod.ViewValue;
-            }
+            //if (string.IsNullOrEmpty(mod.ViewValueText))
+            //{
+            //    text = string.Empty;
+            //}
+            //else
+            //{
+            //    text = mod.ViewValueText;
+            //}
+            text = ToValueTextView(mod.ViewValue);
+
             sub = new ListViewItem.ListViewSubItem();
             //sub.Name = text;
             sub.Text = text;

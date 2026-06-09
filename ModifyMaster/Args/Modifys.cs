@@ -153,9 +153,10 @@ namespace Cheng.ModifyMaster
             p_hotkeys = new List<Keys>();
             Address = default;
             ItemUI = default;
-            p_viewValue = string.Empty;
+            //p_viewValueText = string.Empty;
             p_viewCond = string.Empty;
             p_keyName = string.Empty;
+            p_viewValue = null;
         }
 
         #endregion
@@ -188,10 +189,15 @@ namespace Cheng.ModifyMaster
         /// </summary>
         private List<Keys> p_hotkeys;
 
+        ///// <summary>
+        ///// 值视图缓存文本
+        ///// </summary>
+        //private string p_viewValueText;
+
         /// <summary>
         /// 值视图缓存
         /// </summary>
-        private string p_viewValue;
+        private DynamicNumber? p_viewValue;
 
         /// <summary>
         /// 是否开启
@@ -365,12 +371,24 @@ namespace Cheng.ModifyMaster
         /// <summary>
         /// 需要显示在UI视图上的条目当前值文本
         /// </summary>
-        public string ViewValue
+        //public string ViewValueText
+        //{
+        //    get => p_viewValueText;
+        //    set
+        //    {
+        //        p_viewValueText = value ?? string.Empty;
+        //    }
+        //}
+
+        /// <summary>
+        /// 需要显示在UI视图上的条目当前值
+        /// </summary>
+        public DynamicNumber? ViewValue
         {
             get => p_viewValue;
             set
             {
-                p_viewValue = value ?? string.Empty;
+                p_viewValue = value;
             }
         }
 
